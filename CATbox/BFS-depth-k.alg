@@ -1,4 +1,4 @@
-k = 3
+k = 2
 
 root = PickVertex()
 Q.Append(root)
