@@ -97,7 +97,7 @@ Die Breitensuche kann für viele Fragestellungen in der Graphentheorie verwendet
 - Finde zwischen zwei Knoten $u$ und $w$ einen kürzesten Pfad (ungewichtete Kanten)   
 - Kürzeste-Kreise-Problem
 
-Algorithmus:
+###Algorithmus
 
 ```{Python}
 root = PickVertex()
@@ -116,38 +116,40 @@ while Q.IsNotEmpty():
 ```
 
 
-<!-- Einige Erläuterungen: \\ -->
-<!-- pred[root] = root: "Pointer auf sich selbst" (so erklärte das der Herr Hochstättler) \\ -->
-<!-- pred[w] = v: "Pointer auf Vorgänger". -->
+Einige Erläuterungen:  
+`pred[root] = root`: "Pointer auf sich selbst" (so erklärte das der Herr Hochstättler)  
+`pred[w] = v`: "Pointer auf Vorgänger"  
 
-<!-- \subsection{Laufzeit} -->
-<!-- Die Lineare Laufzeit, ist nur dank der Adjazenzliste möglich. Ansonsten müsste die Funktion "Neighborhood" immer die ganze Zeile bearbeiten, was zu $O(|V|^2)$ führen würde. -->
-<!-- \subsubsection{Satz} -->
-<!-- BFS berechnet die Komponenten eines Graphen in $O(|V|+|E|)$ Zeit. -->
-<!-- \subsubsection{Beweis} -->
-<!-- Da im schlimmsten Fall alle möglichen Pfade zu allen möglichen Knoten betrachtet werden müssen, beträgt die Laufzeit von Breitensuche $O(|V|+|E|)$ Zeit. -->
-<!-- \flushright \qed \flushleft -->
+###Laufzeit  
+Die Lineare Laufzeit, ist nur dank der Adjazenzliste möglich. Ansonsten müsste die Funktion "Neighborhood" immer die ganze Zeile bearbeiten, was zu $O(|V|^2)$ führen würde.
 
-<!-- \subsection{BFS Suchbam mit einer Tiefe von k} -->
-<!-- Siehe auch Aufgabe E 1.1 -->
+Satz:  
+BFS berechnet die Komponenten eines Graphen in $O(|V|+|E|)$ Zeit.  
+Beweis:  
+Da im schlimmsten Fall alle möglichen Pfade zu allen möglichen Knoten betrachtet werden müssen, beträgt die Laufzeit von Breitensuche $O(|V|+|E|)$ Zeit.
 
-<!-- \begin{lstlisting} -->
-<!-- for v in vertices -->
-<!-- 	if pred[v] == None: -->
-<!-- 		pred[v] = v -->
-<!-- 		component[v] = v -->
-<!-- 		depth[v] = 0 -->
-<!-- 		Q.Append(v) -->
-<!-- 	while Q.IsNotEmpty(): -->
-<!-- 		v = Q.Top() -->
-<!-- 		if depth[v] < k: -->
-<!-- 			for w in Neigborhood(v): -->
-<!-- 				if pred[w] == None: -->
-<!-- 					pred[w] = v -->
-<!-- 					component[w] = component[v] -->
-<!-- 					depth[w] = depth[v] + 1 -->
-<!-- 					Q.Append(w) -->
-<!-- \end{lstlisting} -->
+
+## BFS Suchbam mit einer Tiefe von k
+Siehe auch Aufgabe E 1.1
+
+```{Python}
+k = 3
+
+root = PickVertex()
+Q.Append(root)
+pred[root] = root
+depth[root] = 0
+step = 1
+
+while Q.IsNotEmpty():
+    v = Q.Top()
+    if depth[v] < k:
+        for w in Neighborhood(v):
+            if not pred[w]:
+                Q.Append(w)
+                depth[w] = depth[v] + 1
+                pred[w] = v
+```
 
 <!-- \section{DFS} -->
 <!-- Notizen aus Tag in Hagen: \\ -->
