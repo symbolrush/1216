@@ -1,0 +1,630 @@
+---
+title: "Kombinatorische Optimierung"
+author:
+- Adrian Stämpfli, Matrikel-Nr. 9529020
+- Institut für Modellbildung und Simulation, Fachhochschule St.Gallen
+header-includes: \usepackage[ngerman]{babel} \usepackage{graphicx} \usepackage{float}
+  \usepackage{fancyhdr} \pagestyle{fancy} \setlength\headheight{22pt} \fancyhead[L]{\includegraphics[width=3cm]{../pics/logo.png}}
+output:
+  html_notebook:
+    number_sections: yes
+    theme: united
+    toc: yes
+  html_document:
+    theme: united
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    highlight: tango
+    number_sections: yes
+    toc: yes
+preamble: |
+  % Any extra latex you need in the preamble
+abstract: |
+  In diesem Kurs wollen wir die klassischen, gutartigen Graphenprobleme der kombinatorischen Optimierung mit ihren Algorithmen vorstellen und analysieren.
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+```
+
+
+#Einleitung
+
+##Kursbeschreibung  
+In diesem Kurs wollen wir die klassischen, gutartigen Graphenprobleme der kombinatorischen Optimierung mit ihren Algorithmen vorstellen und analysieren. Nach einer Einführung in Graphen und Algorithmen studieren wir zunächst minimale aufspannende Bäume. Ein Schwerpunkt des Kurses liegt auf den Bezügen der kombinatorischen Optimierung zur linearen Optimierung. Diese wollen wir jedoch nur als Werkzeug zum Algorithmendesign benutzen und nicht ihre allgemeinen Lösungsverfahren benutzen. Das zugrundeliegende Paradigma der primal-dualen Verfahren stellen wir am Beispiel des Kruskal-Algorithmus zur Berechnung minimaler aufspannender Bäume vor. Auch bei den folgenden Probleme, kürzeste Wege, maximale Flüsse, kostenminimale Flüsse, Kardinalitätsmatchings und gewichtete Matchings behalten wir immer polyhedrale und geometrische Aspekte im Auge. 
+Der Kurs ist als Alternative zum Kurs 01685 (Effiziente Graphenalgorithmen) gedacht und kann nicht zusammen mit diesem in einem Studiengang als Prüfungsfach gewählt werden. Es existieren Berührungspunkte mit den Kursen Diskrete Mathematik und Lineare Optimierung, deren Kenntnis wird jedoch nicht vorausgesetzt. 
+Für den Kurs benutzen wir einen englischsprachigen Basistext, den wir zusammen mit Alexander Schliep in den letzten 10 Jahren geschrieben haben. Mittelfristig hoffen wir, diesen durch einen "echten" Kurstext ersetzen zu können.
+
+<!-- \section{Anschreiben} -->
+<!-- In diesem Kurs werden Optimierungsprobleme der Gestalt -->
+<!-- Minimiere $c^{T}x$ über alle $x \in S$ -->
+<!-- behandelt, wobei $S \in R -->
+<!-- n$ -->
+<!-- eine Menge mit einer kombinatorischen Struktur, in der Regel sogar -->
+<!-- $S \in Z -->
+<!-- n$ und $c -->
+<!-- >x$ eine lineare Funktion in n Veränderlichen ist. -->
+<!-- Wir befassen uns mit klassischen gutartigen Problemen der kombinatorischen Optimierung, die auf -->
+<!-- graphentheoretischen Problemen beruhen, nämlich Minimaler Aufspannender Baum, Kurzester Weg, -->
+<!-- Maximaler Fluss, Kostenminimaler Fluss, Bipartites Maximales Matching, Nicht-Bipartites Maximales -->
+<!-- Matching und Gewichtetes Matching. Eine wichtige Rolle spielen dabei die polyhedralen Beschreibungen -->
+<!-- der zulässigen Mengen der Probleme und primal-duale Algorithmen. Deswegen werden wir -->
+<!-- schon den Greedy-Algorithmus zur Bestimmung eines minimalen aufspannenden Baumes als primalduales -->
+<!-- Verfahren interpretieren. -->
+
+
+<!-- \part{Algorithmen} -->
+
+<!-- \chapter{Sortieralgorithmen} -->
+
+<!-- \section{Merge Sort} -->
+<!-- Quelle: Kombinatorische Optimierung Seite 10/11, Korte Vygen -->
+
+
+<!-- \subsection{Algorithmus} -->
+<!-- Input: eine Liste $a_1,...a_n$ reeller Zahlen. -->
+
+
+<!-- Output: Eine Permutation $\pi : \{1,...,n\} \rightarrow \{1,...,n\}$ mit $ a_{\pi(i)} \le a_{\pi(i+1)} \forall i=1,...,n-1$. -->
+
+
+<!-- \begin{enumerate} -->
+<!-- \item If $n=1$ then setze $\pi(1) := 1$ und stop(return $\pi$) -->
+<!-- \item Setze $m := \lfloor \frac{n}{2} \rfloor$. -->
+
+
+<!-- Sei $\rho = MERGE-SORT(a_1,...,a_m)$. -->
+
+
+
+<!-- Sei $\theta = MERGE-SORT(a_m,...,a_n)$. -->
+<!-- \item Setze $k = 1, l=1$. \\ -->
+<!-- \begin{lstlisting} -->
+<!-- While -->
+<!-- \end{lstlisting} -->
+
+<!-- ...unvollständig -->
+
+<!-- \end{enumerate} -->
+
+#Suche in Bäumen  
+##BFS - Breitensuche
+
+Die Breitensuche kann für viele Fragestellungen in der Graphentheorie verwendet werden. Einige sind:  
+
+- Finde alle Knoten innerhalb einer Zusammenhangskomponente  
+- Finde zwischen zwei Knoten $u$ und $w$ einen kürzesten Pfad (ungewichtete Kanten)   
+- Kürzeste-Kreise-Problem
+
+Algorithmus:
+
+```{Python}
+root = PickVertex()
+Q.Append(root)
+pred[root] = root
+step = 1
+
+while Q.IsNotEmpty():
+	v = Q.Top()
+	label[v] = step
+	step = step + 1
+	for w in Neigborhood(v):
+		if pred[w] == None:
+			Q.Append(w)
+			pred[w] = v
+```
+
+
+<!-- Einige Erläuterungen: \\ -->
+<!-- pred[root] = root: "Pointer auf sich selbst" (so erklärte das der Herr Hochstättler) \\ -->
+<!-- pred[w] = v: "Pointer auf Vorgänger". -->
+
+<!-- \subsection{Laufzeit} -->
+<!-- Die Lineare Laufzeit, ist nur dank der Adjazenzliste möglich. Ansonsten müsste die Funktion "Neighborhood" immer die ganze Zeile bearbeiten, was zu $O(|V|^2)$ führen würde. -->
+<!-- \subsubsection{Satz} -->
+<!-- BFS berechnet die Komponenten eines Graphen in $O(|V|+|E|)$ Zeit. -->
+<!-- \subsubsection{Beweis} -->
+<!-- Da im schlimmsten Fall alle möglichen Pfade zu allen möglichen Knoten betrachtet werden müssen, beträgt die Laufzeit von Breitensuche $O(|V|+|E|)$ Zeit. -->
+<!-- \flushright \qed \flushleft -->
+
+<!-- \subsection{BFS Suchbam mit einer Tiefe von k} -->
+<!-- Siehe auch Aufgabe E 1.1 -->
+
+<!-- \begin{lstlisting} -->
+<!-- for v in vertices -->
+<!-- 	if pred[v] == None: -->
+<!-- 		pred[v] = v -->
+<!-- 		component[v] = v -->
+<!-- 		depth[v] = 0 -->
+<!-- 		Q.Append(v) -->
+<!-- 	while Q.IsNotEmpty(): -->
+<!-- 		v = Q.Top() -->
+<!-- 		if depth[v] < k: -->
+<!-- 			for w in Neigborhood(v): -->
+<!-- 				if pred[w] == None: -->
+<!-- 					pred[w] = v -->
+<!-- 					component[w] = component[v] -->
+<!-- 					depth[w] = depth[v] + 1 -->
+<!-- 					Q.Append(w) -->
+<!-- \end{lstlisting} -->
+
+<!-- \section{DFS} -->
+<!-- Notizen aus Tag in Hagen: \\ -->
+<!-- \begin{itemize} -->
+<!-- \item Knoten können mehrmals angefasst werden. (Wegen Stack) -->
+<!-- \item "Festnageln" des Knotens geschieht zu einem anderen Zeitpunkt. -->
+<!-- \end{itemize} -->
+
+<!-- rekursiv, Tiefensuche -->
+<!-- \subsection{Algorithmus} -->
+<!-- \begin{lstlisting} -->
+<!-- def DFS(v): -->
+<!-- 	global step -->
+<!-- 	label[v] = step -->
+<!-- 	step = step + 1 -->
+<!-- 	for w in Neighborhood(v): -->
+<!-- 		if label[w] == None -->
+<!-- 			pred[w] = v -->
+<!-- 			DFS(w) -->
+<!-- 	return -->
+<!-- step = 1 -->
+<!-- DFS(r) -->
+<!-- \end{lstlisting} -->
+<!-- \section{Greedy Algorithmus (Kruskal)} -->
+<!-- Berechnet einen MST. -->
+<!-- Input, ein gewichteter Graph $G(V,E,w)$. -->
+
+<!-- \begin{lstlisting} -->
+<!-- Sortiere die Kanten aufsteigend nach Gewicht -->
+<!-- T = 0 -->
+<!-- for e in E -->
+<!-- 	if not T.CreatingCycle(e): -->
+<!-- 		T.AddEdge(e) -->
+<!-- \end{lstlisting} -->
+
+
+<!-- Der Name "Greedy Algorithmus" ist verständlich, wenn die Wirkweise von Kruskal's Algorithmus im Maximum Spanning Tree Problem betrachtet wird. Gierig schnappt er sich die schwerste verfügbare Kante.. \\ -->
+<!-- \subsection{Laufzeit} -->
+<!-- Sortieren geschieht in $O(|E| log |V|)$ \\ -->
+<!-- Creating Circuit: kann mit BFS gemacht werden (Naiv), besser ist Union Find (Komonentenzusammenhang) => Soll im Buch erklärt sein.. -->
+
+
+<!-- \section{Valenzsequenzen} -->
+<!-- Sei $G = (V,E)$ ein Graph (oder ein Multigraph) und $v \in V$. Der Knotengrad oder die Valenz $ deg_G(v)$ von $v$ ist dann die Anzahl Kanten, deren Endknoten $v$ ist (oder kurz $ deg(v)$, wenn klar ist, welcher Graph gemeint ist). In Multigraphen werden Schleifen dabei doppelt gezählt. -->
+
+<!-- \section{Prim-Jarnik} -->
+<!-- Berechnet einen MST. -->
+
+<!-- Sei $v \in V$ -->
+
+<!-- \begin{itemize} -->
+<!-- \item Setze $V_0 = \{v\}, T_0 = 0, i = 0$ -->
+<!-- \item Solange es geht -->
+<!-- \begin{itemize} -->
+<!-- \item Wähle eine Kante $e = (x,y) \in E$ mit $x \in V_i, y \notin V_i$ von minimalem Gewicht und setze $V_{i+1} = V_i \cup \{y\}, T_{i+1} = T_i \cup \{e\}, i = i+1$. -->
+<!-- \end{itemize} -->
+<!-- \end{itemize} -->
+
+<!-- \section{Boruvka} -->
+<!-- Berechnet einen MST. -->
+
+<!-- \begin{itemize} -->
+<!-- \item Setze $T = 0$ -->
+<!-- \item Solange G noch mehr als einen Knoten hat: -->
+<!-- \begin{itemize} -->
+<!-- \item Jeder Knoten markiert die Kante minimalen Gewichts, die zu ihm inzident und keine Schleife ist. -->
+<!-- \item Füge alle markierten Kanten $S$ zu $T$ hinzu und setze $G = G / S$. -->
+<!-- \end{itemize} -->
+<!-- Hierbei interpretieren wir die Kanten in $T$ am Ende als Kanten des ursprünglichen Graphen $G$. -->
+<!-- \end{itemize} -->
+
+<!-- \chapter{Shortest Paths} -->
+<!-- \section{Dijkstra} -->
+<!-- Löst das kürzeste Wege Problem (Problem \ref{pShortestPaths}). Restriktionen sind die nicht-negativität aller Bögen. Die exakte Formulierung des gelösten Problems wird so zu Problem \ref{problem5}. -->
+<!-- \subsection{Algorithmus} -->
+<!-- \begin{lstlisting} -->
+<!-- s = PickVertex -->
+<!-- W.Add(s) -->
+<!-- dist[s] = 0 -->
+
+<!-- while W.IsNotEmpty(): -->
+<!--   v = pickMinimal(W,dist) -->
+<!--   W.Remove(v) -->
+<!--   for w in Neighborhood(v): -->
+<!--     if dist[w] == gInfinity -->
+<!--       W.Add(w) -->
+<!--     if dist[w] > dist[v] + length[(v,w)]: -->
+<!--       dist[w] = dist[v] + length[(v,w)] -->
+<!--       pred[w] = v -->
+<!-- \end{lstlisting} -->
+<!-- \section{FindPathEuclid} -->
+<!-- Bricht ab, sobald $t$ gefunden. Geometrische Variante. Bevorzugt werden Knoten, welche in Richtung der gesuchten Ecke $t$ liegen. -->
+<!-- Dazu wird neben der Funktion $dist$ welche die Pfadlänge zur Quelle $s$ auf dem Graphen speichert, eine Funktion $distance$ welche die Länge in Fluglinie zur Senke $t$ speichert definiert. Als nächstes wird jeweils die Ecke bearbeitet, für welche $\sum dist(v) + distance(v)$ minimal wird. Dadurch werden Knoten in Richtung des Zielknotens $t$ bevorzugt. -->
+<!-- \subsection{Algorithmus} -->
+<!-- \begin{lstlisting} -->
+<!-- while s != t : -->
+<!--   for w in Neighborhood(v) -->
+<!--     if dist[w] == gInfinity : -->
+<!--       dist[w] = dist[v] + length[(v,w)] -->
+<!--       pred[w] = v -->
+<!--       PQ.Insert(w, dist[w]+distance[w]) -->
+<!--     if dist[w] > dist[v] + length[(v,w)] : -->
+<!--       dist[w] = dist[v] + length[(v,w)] -->
+<!--       pred[w] = v -->
+<!--       PQ.DecreaseKey(w, dist[w]+distance[w]) -->
+<!--   v = PQ.DeleteMin(dist -->
+<!-- \end{lstlisting} -->
+
+
+<!-- \section{Bellmann Ford} -->
+<!-- Ist in "Label Correcting" Algorithmus (im Gegensatz zu Dijkstra, welcher ein "Label Setting" Alg. ist, da ein einmal gesetztes Label nicht mehr wechselt.) \\ -->
+
+<!-- \chapter{Maximal Flows} -->
+<!-- Auf einem $st$-Pfad soll möglichst viel transportiert werden. Idee: Suche einen $st$-Pfad, erhöhe die Kapazität, bis keine $st$-Pfade mehr möglich sind. Achtung: So wird möglicherweise nicht die richtige Lösung gefunden werden, da ein Flaschenhals einen Graph entzweit, und dadurch mögliche Wege verloren gehen. Idee: bei jedem inkrementieren eines Vorwärtsflusses auf einer Kante wird eine Rückwärtskante mit der entsprechenden Kapazität angefügt. (D.h. der Fluss könnte auch rückwärts gehen..) -->
+<!-- \section{FordFulkerson} -->
+<!-- \subsection{Algorithmus} -->
+<!-- \begin{lstlisting} -->
+<!-- def UpdateFlow(Path) : -->
+<!--   delta = MinResCap(Path) -->
+<!--   for (u,v) in Edges(Path) : -->
+<!--     if ForwardEdge(u,v) : -->
+<!--      flow[(u,v)] = flow[(u,v)] + delta -->
+<!--     else : -->
+<!--       flow[(v,u)] = flow[(u,v)] - delta -->
+
+<!-- s = PickSource() -->
+<!-- t = Picksink() -->
+
+<!-- while not maximal : -->
+<!--   Path = ShortestPath(s,t) -->
+<!--   if(Path): -->
+<!--     UpdateFlow(Path) -->
+<!--   else : -->
+<!--     maximal = true -->
+
+<!-- \end{lstlisting} -->
+
+
+
+<!-- \part{Probleme} -->
+<!-- \chapter{Minimaler Aufspannender Baum} -->
+<!-- \label{pMST} -->
+<!-- \section{Minimum Connected Subgraphs} -->
+<!-- \subsection{Problem 1 (MCS)} -->
+<!-- \label{problem1} -->
+
+<!-- Let $G = (V,E)$ be a connected graph and $w: E \rightarrow \mathbb{Z}$ a weight or cost function on the edges. Find a connected subgraph $H = (V,F)$, such that -->
+<!-- $ -->
+<!-- \sum_{e \in F}w(e) -->
+<!-- $ -->
+<!-- is minimal. -->
+
+<!-- \section{Maximaler Aufspannender Baum} -->
+<!-- Siehe Auch Exercise 22 im Buch. \\ -->
+<!-- Gesucht ist in einem Graphen $G = (V,E,w)$ ein verbundener Subgraph $H = (V,F)$ für den gilt, dass $\sum_{e \in F}w(e)$ maximal wird. -->
+<!-- \subsection{Lösung} -->
+<!-- Zuerst wird die Gewichtsfunktion invertiert. Danach löst Kruskal's Algorithmus das Problem. -->
+
+<!-- \section{Minimum Spanning Tree} -->
+<!-- \subsection{Problem 2 (MST)} -->
+<!-- \label{problem2} -->
+<!-- Let $G = (V,E)$ be a connected graph and $w: E \rightarrow \mathbb{Z}$ a weight function on the edges. Find a spanning tree $T$ of $G$, such that $\sum_{e \in T}w(e)$ is minimal. -->
+
+
+<!-- Zu Deutsch:\\ -->
+<!-- \textbf{Input:} Zusammenhängender Graph $G=(V,E)$ mit Kantengewichten $w: E \rightarrow \mathbb{R}$. \\ -->
+<!-- \textbf{Output:} Baum, mit minimalem Gesamtgewicht \\ -->
+<!-- Anmerkung: R oder Z ist egal, aus "Informatikersicht dasselbe" -->
+
+<!-- \subsection{Problem 3 (MST)} -->
+<!-- \label{problem3} -->
+<!-- Determine a tree $T$, such that $x_T$ minimizes the linear function $w^\top x_T := \sum_{e \in E}w_e x_T (e)$. -->
+
+<!-- \section{Shortest Paths} -->
+<!-- \label{pShortestPaths} -->
+<!-- \subsection{Problem 4} -->
+<!-- \label{problem4} -->
+<!-- Let $D = (V,A)$ be a directed graph and $length: A \rightarrow \mathbb{Z}$ a weight function on the arcs. Consider the shortest path problem variants: -->
+<!-- \subsubsection{(i)} -->
+<!-- $st$-path: Let $s,t \in V$. Find a shortest path from $s$ to $t$. -->
+<!-- \subsubsection{(ii)} -->
+<!-- $s$-path: Let $s \in V$. Find shortest paths from $s$ to all $v \in V$. -->
+<!-- \subsubsection{(iii)} -->
+<!-- distances: Determine the distance; i.e., the length of a shortest path between any pair of vertices $u,v \in V$. -->
+<!-- \subsubsection{Bemerkungen} -->
+<!-- Obwohl das $st$-Pfad Problem am natürlichsten tönt, ist doch das $s$-Pfad das meistbetrachtete. Denn alle bekannten Algorithmen für das $st$-Pfad Problem suchen nach $s$-Pfaden, finden alle (oder zumindest einen Teil) der $s$-Pfade und stoppen, sobald der gesuchte $st$-Pfad gefunden wurde. \\ -->
+<!-- Die Beschränkung auf Digraphe kommt daher, dass bei der Verallgemeinerung in Graphen (Ersatz jeder edge durch zwei arcs in entgegengesetzten Richtungen) Probleme bei negativen Kantengewichten auftreten. (Dadurch entstehen Kreise negativer Länge, welche das Problem unlösbar machen.) -->
+<!-- \subsubsection{Problemklassen bezüglich den Restriktionen an die Kantengewichte} -->
+<!-- We distinguish between problems with -->
+<!-- (i) non-negative weights, \\ -->
+<!-- (ii) without negative circuits and with \\ -->
+<!-- (iii) arbitrary weights. \\ -->
+<!-- We will be mainly concerned with the first variant and will not discuss the last. -->
+
+<!-- \subsection{Problem 5} -->
+<!-- \label{problem5} -->
+<!-- Let $D = (V,A)$ be a directed graph, $w: A \rightarrow \mathbb{Z}_+$ a non-negative weight function on the arcs and $s \in V$. Find a shortest path from $s$ to $v$ for all $v \in V$. -->
+
+<!-- \subsection{Problem 6} -->
+<!-- \subsection{Problem 7} -->
+
+<!-- \chapter{Kürzester Weg} -->
+<!-- \chapter{Maximaler Fluss} -->
+<!-- \section{Das Maximale Fluss Problem in seiner dualen Form} -->
+<!-- Idee: Die Kapazität jedes $st$-Schnittes, der den Digraphen so zerteilt, dass $t$ von $s$ aus nicht mehr erreichbar ist, ist ein Upper Bound für den maximalen Fluss $f$. -->
+<!-- \chapter{Kostenminimaler Fluss} -->
+<!-- \chapter{Kardinalitätsmaximale Matchings} -->
+
+<!-- \section{Bipartites Maximales Matching} -->
+<!-- \section{Nicht-Bipartites Maximales Matching} -->
+<!-- \chapter{Gewichtetes Matching} -->
+
+
+<!-- \part{Mathematische Grundlagen} -->
+<!-- \chapter{Begriffe} -->
+<!-- \section{Lemma} -->
+<!-- \section{Korollar} -->
+<!-- \section{Satz} -->
+
+<!-- \chapter{Beweisverfahren} -->
+<!-- \section{Direkter Beweis} -->
+<!-- \section{Beweis durch Kontraposition} -->
+<!-- \section{Widerspruchsbeweis oder reductio ad absurdum} -->
+<!-- \section{Das Prinzip der vollständigen Induktion} -->
+
+
+<!-- \chapter{Graphen} -->
+<!-- Graph / Multigraph: teilweise unklar, je nach Definition ist Graph allgemein, d.h. mit doppelten Kanten und Schlingen, gemeint, an anerer Stelle wird dies als Multigraph bezeichnet und Graph bezeichnet einen einfachen Graph. -->
+<!-- \subsection{Minor} -->
+<!-- Entsteht aus $G$ durch Löschen und Kontrahieren von Teilmengen der Kantenmenge von $G$. \\ -->
+<!-- $G \setminus e$: Graph, der durch Löschen der Kante $e$ aus $G$ entsteht. \\ -->
+<!-- $G / e$: Graph, der durch Kontraktion der Kante $e$ aus $G$ entsteht. -->
+
+
+<!-- \subsection{(Induzierter) Teilgraph} -->
+<!-- Seien $G=(V,E)$ und $H=(W,F)$ zwei Graphen. Dann heisst $H$ ein Teilgraph von $G$, wenn $W \subseteq V$ und $F \subseteq E$. Darüber hinaus sagen wir $H$ ist ein induzierter Teilgraph, wenn $F = E \cap \binom{W}{2}$. \\ -->
+<!-- Ein induzierter Teilgraph besteht also aus einer Teilmenge der Knoten und allen Kanten, die im Ausgangsgraphen zwishen diesen Knoten existieren. -->
+
+<!-- \subsection{Spaziergang} -->
+<!-- Gerichteter oder ungerichteter Pfad. -->
+<!-- \subsection{Weg} -->
+<!-- Spezialfall eines Spaziergangs; Spaziergang ohne Knotenwiederholung -->
+<!-- \subsection{Kreis} -->
+<!-- Geschlossener Weg -->
+
+<!-- \subsection{Adjazent} -->
+<!-- Ist $e = (u,v)$ eine Kante eines Graphen $G$, sagen wir, $u$ und $v$ sind adjazent oder Nachbarn, oder $u$ kennt $v$, bzw. $v$ kennt $u$. -->
+
+<!-- \subsection{Inzident} -->
+<!-- Ein $v$ und ein $e$ sind inzident, wenn $e$ in $v$ endet. -->
+
+<!-- \subsection{Adjazenzmatrix} -->
+<!-- Knoten-Knoten Matrix. Idee: Welcher Knoten kennt welchen Knoten. \\ -->
+<!-- Vorteil: es kann in konstanter Zeit festgestellt werden, ob zwei Knoten adjazent sind. -->
+<!-- \subsection{Inzidenzmatrix} -->
+<!-- Knoten-Kanten Matrix. Idee: Welche Kante endet in welchem Knoten. \\ -->
+<!-- Vorteil: Etwas kleiner als Adjazenzmatrix.. -->
+<!-- \subsection{Adjazenzliste} -->
+<!-- \begin{lstlisting} -->
+<!-- Neighborhood(v) -->
+<!-- \end{lstlisting} -->
+<!-- ist die Funktion im Pseudocode, die in konstanter Zeit alle Nachbarn von $v$ findet. \\ -->
+<!-- Auch: Liste, in der jedem Knoten bekannt gemacht wird, wen er kennt. -->
+
+<!-- \chapter{Effiziente Algorithmen} -->
+<!-- Aus "Algorithmische Mathematik" -->
+<!-- \section{Definition} -->
+<!-- Ein "Algorithmus für ein Problem" ist eine \textbf{Folge von wohldefinierten Regeln bzw. Befehlen}, die in einer \textbf{endlichen Anzahl von Elementarschritten} aus jeder \textbf{spezifischen Eingabe eine spezifische Ausgabe} erzeugt. Wir fordern also: -->
+<!-- \begin{enumerate} -->
+<!-- \item Ein Algorithmus muss sich in einem Text endlicher Länge beschreiben lassen. -->
+<!-- \item Die Abfolge der Schritte ist in jeder Berechnung eindeutig. -->
+<!-- \item Jeder Elementarschritt lässt sich mechanisch und effizient ausführen. -->
+<!-- \item Der Algorithmus stoppt bei jeder Eingabe nach endlich vielen Schritten. -->
+<!-- \end{enumerate} -->
+<!-- \section{Laufzeit} -->
+<!-- In Abhängigkeit der Kodierungslänge der Eingabedaten. -->
+
+
+<!-- Interessant ist das asymptotische Verhalten, "Big Oh"-Notation. -->
+
+<!-- \chapter{Polyhedrale Beschreibungen} -->
+<!-- Beschreibung einer Lösungsmenge in Form eines Polyeders. (also geometrische Beschreibung) -->
+<!-- \section{Polyeder} -->
+<!-- Die Lösungsmenge einer nichttrivialen Gleichung im $\mathbb{R}^n$ ist eine Hyperebene, in der Ebene bekanntlich eine Gerade. Die Ungleichungen definieren dann jeweils einen abgeschlossenen Halbraum, der von so einer Hyperebene berandet wird. Der zulässige Bereich ist also Schnitt von abgeschlossenen Halbräumen. So etwas nenne wir ein Polyeder. -->
+
+
+<!-- \subsection{Definition} -->
+<!-- Eine Menge $P \in \mathbb{R}^n$ heisst Polyeder, wenn es ein $m \in \mathbb{N}$, eine Matrix $A \in \mathbb{R}^{m \times n}$ und ein $b \in \mathbb{R}^m$ gibt mit -->
+<!-- \begin{equation} -->
+<!-- \label{eq:polyeder} -->
+<!-- P = \{x \in \mathbb{R}^n | Ax \le b \} -->
+<!-- \end{equation} -->
+
+
+<!-- \chapter{Primal-Duale Algorithmen} -->
+<!-- \section{Grundlagen} -->
+<!-- \subsection{Allgemeine Überlegung} -->
+<!-- Die Idee ist grundsätzlich: Das Problem von beiden Seiten eingrenzen. Statt nur von "unten" her ein Maximum zu suchen wird gleichzeitig von "oben" her eine untere Schranke für das Maximum gesucht. Das Optimum wird dabei meist $z^*$ genannt. \\ Magically we find upper bounds without knowing $z^*$. -->
+<!-- \subsection{Ungleichungen} -->
+<!-- Einige Grundlagen zu Ungleichungen: \\ -->
+<!-- \begin{itemize} -->
+<!-- \item Ungleichungen können mit $y \in \mathbb{R}^+$ multipliziert werden. (Nicht jedoch mit $y \in \mathbb{R}$, das gibt Nonsense: $1 \le 2$, nicht jedoch $-1 \le -2$) -->
+<!-- \item Wenn gilt $e_1 \le z_1$ und $e_2 \le z_2$ dann gilt auch $e_1 + e_2 \le z_1 + z_2$. -->
+<!-- \end{itemize} -->
+<!-- Daraus folgt auch der, der Dualisierung zugrunde liegende Trick. Mehrere Restriktions-Ungleichungen werden multipliziert und addiert, so dass das Resultat der Zielfunktion entspricht. Dadurch werden obere Schranken gefunden für $z^*$. -->
+<!-- \subsection{Nomenklatur} -->
+<!-- \begin{itemize} -->
+<!-- \item $y$: duale Variablen (manchmal Lagrange Koeffizienten) -->
+<!-- \item $c^\top x$: Zielfunktion -->
+<!-- \item $z^*$: Optimalwert -->
+<!-- \item $Ax = b$: Restriktionsgleichungen (Constraints) -->
+<!-- \end{itemize} -->
+<!-- \subsection{Dualisierung} -->
+<!-- Die Idee ist eine Kombination $y^*$ zu bekommen, welche einerseits dazu führt, dass die Addition der mit $y_i$ multiplizierten Restriktionsungleichungen gleich der Zielfunktion wird (ansonsten würde ein Upper Bound für eine andere Zielfunktion gefunden), und andererseits soll dabei der minimale Upper Bound gefunden werden. \\ -->
+<!-- d.h. aus $ maxc^\top x$ wird $min~y^\top b$. Minimiert werden soll ja der upper bound, der sich in der gewählten Darstellung aus der Multiplikation der rechten Seiten der Restriktionsungleichungen $b$ multipliziert mit den dualen Variablen $y$ ergibt. Die erste Matrix wird transponiert, um die Matrixmultiplikation zu ermöglichen. \\ -->
+<!-- Dabei gilt es die erhaltene Form der Restriktionsungleichungen einzuhalten. Diese wurden mit diesem Verfahren zu $A^\top y - y_s = c$ und $y \ge 0$ und $y_s \ge 0$. D.h. $y_s = A^\top y - c \ge 0$. \\ -->
+<!-- Somit wird aus dem Problem -->
+<!-- \begin{equation} -->
+<!-- \begin{split} -->
+<!-- \label{eq:} -->
+<!-- max~c^\top x \\ -->
+<!-- unter~Ax \le b \\ -->
+<!-- x \ge 0 -->
+<!-- \end{split} -->
+<!-- \end{equation} -->
+<!-- das Problem -->
+<!-- \begin{equation} -->
+<!-- \begin{split} -->
+<!-- \label{eq:} -->
+<!-- min~b^\top y \\ -->
+<!-- unter~A^\top y \ge c \\ -->
+<!-- y \ge 0 -->
+<!-- \end{split} -->
+<!-- \end{equation} -->
+<!-- Das Problem wurde also in ein Problem mit neuen Variablen ($y$ anstelle $x$) umgebaut. Die Koeffizienten der Problemstellung bleiben jedoch erhalten ($A$, $b$, $c$). -->
+<!-- \subsection{Primal vs. Dual} -->
+<!-- aus $n$ Variablen $x := x_1 ... x_n$ werden $m$ Variablen $y := y_1 ... y_m$. Aus $m$ Constraints $A$ werden $n$ Constraints $A^\top$. Der Zielvektor wird von $ max(c)$ zu $min(b)$. -->
+<!-- \subsection{Weak Duality Theorem} -->
+<!-- Für jedes paar von möglichen Lösungen (nicht optimalen) des primalen- bzw. dualen Problems gilt: -->
+<!-- \begin{equation} -->
+<!-- \label{eq:weakdualitytheorem} -->
+<!-- b^\top y \ge c^\top x -->
+<!-- \end{equation} -->
+<!-- Kann bewiesen werden, nur durch die Ausnutzung, dass eine Lösung die Restriktionen erfüllen muss. \\ -->
+<!-- Ebenso gilt $y^\top b = b^\top y$ (wird auch für den Beweis benötigt). \\ -->
+<!-- Daraus folgt nun, dass für jedes Paar von optimalen Lösungen zum primalen- bzw. dualen Problem $x^*,y^*$ ebenso gelten muss: -->
+<!-- \begin{equation} -->
+<!-- \label{eq:weakdualitytheorem} -->
+<!-- b^\top y^* \ge c^\top x^* -->
+<!-- \end{equation} -->
+<!-- \subsection{Strong Duality} -->
+<!-- Für ein LP gilt, ist $x^*$ eine primal-optimale Lösung, dann hat das duale-Problem eine optimale Lösung mit: $b^\top y^* = c^\top x^*$. -->
+<!-- \subsection{Unbeschränkte Lösung beim primalen- oder dualen-Problem} -->
+<!-- Es gilt: -->
+<!-- \begin{itemize} -->
+<!-- \item ist das primale Problem unbeschränkt, so hat das duale Problem keine gültige Lösung -->
+<!-- \item ist das duale Problem unbeschränkt, so hat das primale Problem keine gültige Lösung -->
+<!-- \end{itemize} -->
+<!-- \subsection{Dual Certificates} -->
+<!-- Wie kann überprüft werden, ob eine Lösung $x^*$ tatsächlich die optimale Lösung des primalen Problems ist? Antwort: Dies ist leider unmöglich. \\ -->
+<!-- Dagegen kann sehr wohl und einfach überprüft werden, ob ein Paar $x^*, y^*$ eine optimale Lösung des Primalen und Dualen Problems sind. Dazu wird: -->
+<!-- \begin{enumerate} -->
+<!-- \item überprüft, ob $x^*$ eine mögliche Lösung des primalen Problems ist -->
+<!-- \item das duale Problem konstruiert und überprüft, ob $y^*$ eine mögliche Lösung des dualen Probelms ist -->
+<!-- \item überprüft, ob $b^\top y^* = c^\top x^*$ gilt. -->
+<!-- \end{enumerate} -->
+<!-- \section{Lineares Programm in Standardform} -->
+<!-- \subsection{Definition} -->
+<!-- Sei $A \in \mathbb{R}^{m \times n}$, $b \in \mathbb{R}^m$, $b \ge 0$ uund $c \in \mathbb{R}^n$. Die Aufgabenstellung -->
+<!-- \begin{equation} -->
+<!-- \begin{split} -->
+<!-- \label{eq:linprog} -->
+<!-- max~c^\top x \\ -->
+<!-- unterAx = b \\ -->
+<!-- x \ge 0 -->
+<!-- \end{split} -->
+<!-- \end{equation} -->
+<!-- nennen wir Lineares Programm in Standardform oder auch Lineares Optimierungsproblem in Standardform. -->
+
+
+<!-- \subsection{Standardisierung} -->
+<!-- \begin{enumerate} -->
+<!-- \item $b \ge 0$ immer erreichbar, indem entsprechende Nebenbedingungen mit $-1$ durchmultipliziert werden -->
+<!-- \item $min$ statt $ max$: Umwandeln, wobei $ max_{x \in S} c(x) = - \left( min_{x \in S} - c(x) \right)$ -->
+<!-- \item Ungleichungen mit Schlupfvariablen in Gleichungen umformen -->
+<!-- \item Nichtnegativität: Aufsplitten $u = u^+ - u^-$ mit $u^+, u^- \ge 0$  -->
+<!-- \end{enumerate} -->
+
+<!-- \section{Der Dualitätssatz der Linearen Optimierung} -->
+<!-- \subsection{Definition} -->
+<!-- Das Lineare Programm -->
+<!-- \begin{equation} -->
+<!-- \begin{split} -->
+<!-- \label{eq:p} -->
+<!-- (D)~~min~y ^\top b \\ -->
+<!-- ~~~~~unter~y^\top A \ge c^\top -->
+<!-- \end{split} -->
+<!-- \end{equation} -->
+<!-- heisst das duale Programm zum Linearen Programm in Standardform. -->
+
+
+<!-- \subsection{Satz: Dualitätssatz der Linearen Programmierung} -->
+<!-- Seien $A \in \mathbb{R}^{m \times n}$, $b \in \mathbb{R}^m$ und $c \in \mathbb{R}^n$ und $A$ von vollem Zeilenrang m. Dann gilt: \\ -->
+<!-- Ist das primale Programm zulässig und beschränkt, so ist auch das duale Programm zulässig und beschränkt und es gibt Optimallösungen $x^*$ des primalen bzw. $y^*$ des dualen Programms mit -->
+<!-- \begin{equation} -->
+<!-- \label{eq:name} -->
+<!-- c^\top x^* = y^{* \top}b -->
+<!-- \end{equation} -->
+
+
+<!-- \chapter{Matroide} -->
+<!-- (Aus Kombinatorische Optimierung, s.343 ff.) \\ -->
+<!-- Nützlich für die Verallgemeinerung vieler Probleme der Komb. Opt., siehe s.345. -->
+
+<!-- \subsection{Definition} -->
+<!-- Ein Unabhängigkeitssystem ist ein Matroid, falls Folgendes gilt: \\ -->
+<!-- Sind $X, Y \in \mathcal{F}$ mit $|X| > |Y|$, so gibt es ein $x \in X \setminus Y$ mit $Y \cup \{ x\} \in \mathcal{F}$. \\ -->
+<!-- Der Name Matroid deutet an, dass es sich hier um eine Verallgemeinerung des Matrixbegriffs handelt. \\... -->
+
+<!-- \chapter{Diverses} -->
+
+
+<!-- \subsection{Konvexkombination} -->
+<!-- In reellen Räumen nennt man eine Linearkombination Konvexkombination, wenn alle Koeffizienten aus dem Einheitsintervall $[0,1]$ stammen und deren Summe $1$ ergibt: -->
+
+<!-- $ v = a_1 v_1 + a_2 v_2 + \dotsb + a_n v_n = \sum_{i=1}^{n} a_i v_i,\quad 0 \le a_i \le 1, \sum_{i=1}^{n}a_i=1$ -->
+
+
+<!-- Dabei kann die Bedingung $a_i \le 1$ entfallen, denn sie ergibt sich automatisch aus der Summenbedingung und der Nichtnegativität der Koeffizienten. Mit obigen Bezeichnungen gilt daher in reellen Räumen: Eine Linearkombination ist genau dann eine Konvexkombination, wenn sie konisch und affin ist. -->
+
+<!-- Konvexkombinationen von Konvexkombinationen sind wieder Konvexkombinationen. Die Menge aller Konvexkombinationen einer vorgegebenen Menge von Vektoren heißt deren konvexe Hülle. -->
+
+
+<!-- \subsection{Schlupfvariable} -->
+<!-- Sei $Ax \le b$, so ist $y$ eine Schlupfvariable, die es erlaubt zu schreiben $ Ax + y = b$. Wird benötigt, um Probleme in Lineare Programme in Standardform umzuformen. -->
+
+<!-- \subsection{Kontraktion} -->
+<!-- In der Graphentheorie bezeichnet Kantenkontraktion oder Kontraktion eine grundlegende Operation auf Graphen. Dabei wird eine Kante $e = (u,v)$ entfernt und die beiden anliegenden Knoten werden zu einem neuen Knoten $w$ vereinigt. -->
+
+
+<!-- $G_2 = G/e$ -->
+
+
+<!-- \subsection{Kommutativgesetz} -->
+<!-- Das Kommutativgesetz (lat. commutare „vertauschen“), auf Deutsch Vertauschungsgesetz, ist eine Regel aus der Mathematik. Wenn sie gilt, können die Argumente einer Operation vertauscht werden, ohne dass sich das Ergebnis verändert. Mathematische Operationen, die dem Kommutativgesetz unterliegen, nennt man kommutativ. -->
+
+
+<!-- $a+b = b+a$ -->
+
+
+<!-- $a \times b = b \times a$ -->
+
+<!-- \subsection{Assoziativgesetz} -->
+<!-- Das Assoziativgesetz (lat. associare „vereinigen, verbinden, verknüpfen, vernetzen“), auf Deutsch Verknüpfungsgesetz oder auch Verbindungsgesetz, ist eine Regel aus der Mathematik. Eine (zweistellige) Verknüpfung ist assoziativ, wenn die Reihenfolge der Ausführung keine Rolle spielt. Anders gesagt: Die Klammerung mehrerer assoziativer Verknüpfungen ist beliebig. Deshalb kann man es anschaulich auch „Klammergesetz“ nennen. -->
+
+
+<!-- $(a+b)+c = a+(b+c)$ -->
+
+
+<!-- \subsection{Distributivgesetz} -->
+<!-- Die Distributivgesetze (lat. distribuere „verteilen“) sind mathematische Regeln, die angeben, wie sich zwei zweistellige Verknüpfungen bei der Auflösung von Klammern zueinander verhalten, nämlich dass die eine Verknüpfung in einer bestimmten Weise verträglich ist mit der anderen Verknüpfung. -->
+
+<!-- Insbesondere in der Schulmathematik bezeichnet man die Verwendung des Distributivgesetzes zur Umwandlung einer Summe in ein Produkt als Ausklammern oder Herausheben. Das Auflösen von Klammern durch Anwenden des Distributivgesetzes wird als Ausmultiplizieren bezeichnet. -->
+
+<!-- $(a+b) \times c = ac + bc$ -->
+
+<!-- \subsection{Hüllenoperator} -->
+<!-- In der Mathematik versteht man unter der Hülle einer Menge eine Obermenge, die groß genug ist, um bestimmte Anforderungen zu erfüllen, und zugleich die kleinste Menge ist, die diese Anforderungen erfüllt. Beispiele sind die konvexe Hülle einer Teilmenge eines Vektorraums, die abgeschlossene Hülle einer Teilmenge eines topologischen Raums oder die transitive Hülle einer zweistelligen Relation. Hüllenoperator bezeichnet die Vorschrift, durch die jeder Menge von Objekten ihre Hülle zugeordnet wird. -->
+
+
+<!-- \subsection{Farkas' Lemma} -->
+<!-- Für jede reelle Matrix $A$ und jeden reellen Vektor $b$ ist von beiden Systemen -->
+<!-- \begin{enumerate} -->
+<!-- \item $A x = b,~x \geq 0$ -->
+<!-- \item  $A^\top y \geq 0,~b^\top y < 0$ -->
+<!-- \end{enumerate} -->
+<!-- stets genau eines lösbar. Dabei ist $x \geq 0$ sowie $A^\top y \geq 0$ komponentenweise zu verstehen. -->
+
+
+<!-- \subsection{Kuhn-Tucker Bedingungen} -->
