@@ -151,28 +151,49 @@ while Q.IsNotEmpty():
                 pred[w] = v
 ```
 
-<!-- \section{DFS} -->
-<!-- Notizen aus Tag in Hagen: \\ -->
-<!-- \begin{itemize} -->
-<!-- \item Knoten können mehrmals angefasst werden. (Wegen Stack) -->
-<!-- \item "Festnageln" des Knotens geschieht zu einem anderen Zeitpunkt. -->
-<!-- \end{itemize} -->
+##DFS  
+Notizen aus Tag in Hagen:   
+- Knoten können mehrmals angefasst werden. (Wegen Stack)  
+- "Festnageln" des Knotens geschieht zu einem anderen Zeitpunkt.
 
-<!-- rekursiv, Tiefensuche -->
-<!-- \subsection{Algorithmus} -->
-<!-- \begin{lstlisting} -->
-<!-- def DFS(v): -->
-<!-- 	global step -->
-<!-- 	label[v] = step -->
-<!-- 	step = step + 1 -->
-<!-- 	for w in Neighborhood(v): -->
-<!-- 		if label[w] == None -->
-<!-- 			pred[w] = v -->
-<!-- 			DFS(w) -->
-<!-- 	return -->
-<!-- step = 1 -->
-<!-- DFS(r) -->
-<!-- \end{lstlisting} -->
+
+###Algorithmus - rekursiv  
+```{Python}
+step = 1
+
+def DFS(v):
+	global step
+	label[v] = step
+	step = step + 1
+	for w in Neighborhood(v):
+		if label[w] == None
+			pred[w] = v
+			DFS(w)
+			
+root = PickVertex()
+DFS(root)
+```
+
+###Algorithmus - BFStoDFS
+```{Python}
+root = PickVertex()
+S.push(root)
+pred[root] = root
+step = 1
+
+while S.IsNotEmpty():
+	v = S.pop()
+	label[v] = step
+	step = step + 1
+	for w in Neigborhood(v):
+		if pred[w] == None:
+			S.push(w)
+			pred[w] = v
+```
+
+
+
+
 <!-- \section{Greedy Algorithmus (Kruskal)} -->
 <!-- Berechnet einen MST. -->
 <!-- Input, ein gewichteter Graph $G(V,E,w)$. -->
